@@ -3,7 +3,6 @@ package container
 import (
 	"context"
 	"log"
-	"sync"
 	"meetup_checkin/service"
 	"meetup_checkin/store"
 
@@ -11,10 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-var (
-	once sync.Once
-	checkinService *service.CheckinService
-)
 
 func getDynamoDBClient() *dynamodb.Client {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("ap-northeast-2"))
@@ -26,11 +21,8 @@ func getDynamoDBClient() *dynamodb.Client {
 }
 
 func GetCheckinService() *service.CheckinService {
-	once.Do(func() {
 	dynamoClient := getDynamoDBClient()
-		checkinStore := store.NewCheckinRepository(dynamoClient)
-		checkinService := service.NewCheckinService(checkinStore)
-		checkinService = checkinService
-	})
+	checkinStore := store.NewCheckinRepository(dynamoClient)
+	checkinService := service.NewCheckinService(checkinStore)
 	return checkinService
 }
